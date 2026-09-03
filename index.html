@@ -75,15 +75,31 @@
   .tlabel{color:#FFD35C;font-size:10.5px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 2px 6px rgba(0,0,0,.3)}
   .ttitle{color:#fff;font-size:17px;font-weight:900;text-align:center;line-height:1.3;margin-top:6px;padding:0 6px;text-shadow:0 2px 8px rgba(0,0,0,.3)}
 
-  .boxwrap{position:relative;width:min(66vw,250px);aspect-ratio:1/1;margin-top:20px;flex:0 0 auto;cursor:pointer}
-  .boxwrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;border-radius:16px;
-    filter:drop-shadow(0 18px 30px rgba(0,0,0,.4));opacity:0;transition:opacity .25s,transform .4s cubic-bezier(.3,1.5,.4,1)}
-  .boxwrap img.show{opacity:1}
-  .boxwrap.pop img.show{animation:boxpop .5s cubic-bezier(.2,1.6,.4,1)}
+  /* three pickable boxes -> anticipation ("which one?!") instead of one static box */
+  .boxRow{position:relative;width:min(84vw,320px);height:min(66vw,240px);margin-top:18px;flex:0 0 auto}
+  .boxSlot{position:absolute;top:50%;width:104px;height:104px;transform:translate(-50%,-50%) scale(1);
+    cursor:pointer;transition:opacity .35s,transform .4s cubic-bezier(.3,1.4,.4,1),filter .3s;z-index:5}
+  .boxSlot[data-i="0"]{left:16%}
+  .boxSlot[data-i="1"]{left:50%;z-index:6}
+  .boxSlot[data-i="2"]{left:84%}
+  .boxSlot img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 14px 24px rgba(0,0,0,.4))}
+  .boxSlot.bob{animation:bob 1.1s ease-in-out infinite}
+  .boxSlot.bob[data-i="0"]{animation-delay:-.2s}
+  .boxSlot.bob[data-i="2"]{animation-delay:-.5s}
+  @keyframes bob{0%,100%{transform:translate(-50%,-50%) translateY(0) scale(1)}50%{transform:translate(-50%,-50%) translateY(-8px) scale(1.03)}}
+  .boxSlot.shake{animation:boxshake .55s ease}
+  @keyframes boxshake{0%,100%{transform:translate(-50%,-50%) rotate(0) scale(1.05)}20%{transform:translate(-50%,-50%) rotate(-9deg) scale(1.08)}40%{transform:translate(-50%,-50%) rotate(9deg) scale(1.08)}60%{transform:translate(-50%,-50%) rotate(-7deg) scale(1.1)}80%{transform:translate(-50%,-50%) rotate(7deg) scale(1.1)}}
+  .boxSlot.dim{opacity:.3;filter:grayscale(.4);transform:translate(-50%,-50%) scale(.82)}
+  .boxSlot.vanish{opacity:0;transform:translate(-50%,-50%) scale(.5)}
+  .boxSlot.grown{width:104px;height:104px;transform:translate(-50%,-50%) scale(2.35);z-index:10}
+  .boxSlot.grown.pop img{animation:boxpop .5s cubic-bezier(.2,1.6,.4,1)}
   @keyframes boxpop{0%{transform:scale(1)}40%{transform:scale(.78) rotate(-4deg)}70%{transform:scale(1.18) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
-  .boxwrap.bob img.show{animation:bob 1.1s ease-in-out infinite}
-  @keyframes bob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.02)}}
-  .boxwrap.shrink img.show{transform:scale(.35) translateY(60px);opacity:.4;transition:transform .55s cubic-bezier(.3,.85,.4,1),opacity .55s .1s}
+  .boxSlot.grown.shrink{transform:translate(-50%,-50%) scale(.9) translateY(60px);opacity:.4;transition:transform .55s cubic-bezier(.3,.85,.4,1),opacity .55s .1s}
+
+  /* ambient floating sparkles — matches the game's own dense-star look, keeps the screen alive */
+  .ambientLayer{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+  .ambientSpark{position:absolute;pointer-events:none;font-size:14px;opacity:0;animation:ambientFloat 3.6s ease-in infinite;z-index:1}
+  @keyframes ambientFloat{0%{opacity:0;transform:translateY(0) scale(.6) rotate(0)}12%{opacity:.85}80%{opacity:.6}100%{opacity:0;transform:translateY(-90px) scale(1.1) rotate(50deg)}}
 
   .rarityBadge{position:absolute;top:-8px;left:50%;transform:translate(-50%,-8px) scale(.4);z-index:12;
     background:linear-gradient(90deg,#FFD35C,#FFB03C);color:#4a2900;font-size:12px;font-weight:900;letter-spacing:.5px;
@@ -132,6 +148,7 @@
   <div class="glowblob g1"></div><div class="glowblob g2"></div>
 
   <div class="phone"><div class="screen" id="screen">
+    <div class="ambientLayer" id="ambientLayer"></div>
 
     <div class="topbar" id="topbar">
       <div class="brand"><span class="dot"></span>ASMR Dumpling</div>
@@ -141,12 +158,13 @@
     <div class="trialwrap" id="trialWrap">
       <div class="tlabel">YOUR TURN</div>
       <div class="ttitle" id="ttitle">Tap the box to open it</div>
-      <div class="boxwrap" id="boxWrap">
+      <div class="boxRow" id="boxRow">
         <div class="rarityBadge" id="rarityBadge">✨ LEGENDARY!</div>
-        <img id="imgSteamer" class="show" src="" alt="">
-        <img id="imgGold" src="" alt="">
+        <div class="boxSlot" data-i="0"><img class="boximg" src="" alt=""></div>
+        <div class="boxSlot" data-i="1"><img class="boximg" src="" alt=""></div>
+        <div class="boxSlot" data-i="2"><img class="boximg" src="" alt=""></div>
       </div>
-      <div class="thint" id="tHint">👆 tap to open</div>
+      <div class="thint" id="tHint">👆 pick a box</div>
     </div>
 
     <img class="hand" id="hand" alt="" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 60'><path d='M18 4c0-2 4-2 4 0v22l4-6c1-2 5 0 4 2l-2 6h6c3 0 6 2 6 6v10c0 6-4 12-12 12H22c-5 0-8-3-10-7L6 40c-1-2 2-5 4-3l4 4V4z' fill='white' stroke='%234a0f2e' stroke-width='1.8'/></svg>">
@@ -159,10 +177,10 @@
       </div>
       <div class="iscene" id="handoff">
         <div id="handoffIcon">🥟</div>
-        <div id="handoffH">Now <em>you</em> open one! 🎉</div>
-        <div id="handoffSub">Tap the box and see what's inside.</div>
+        <div id="handoffH">Now <em>you</em> pick a box! 🎉</div>
+        <div id="handoffSub">3 boxes… which one has the legendary dumpling?</div>
       </div>
-      <button class="startbtn" id="startBtn">🎁 Open a box</button>
+      <button class="startbtn" id="startBtn">🎁 Pick a box</button>
       <button class="skip" id="skipBtn">Skip ▶</button>
     </div>
 
@@ -216,32 +234,38 @@ function sparkBurst(el,n){ const r=el.getBoundingClientRect();
     setTimeout(()=>s.remove(),950); }
 }
 
-let opened=false;
+let opened=false, boxEls=[];
 function buildTrial(){
   opened=false;
-  const w=$('boxWrap'); w.className='boxwrap bob';
-  $('imgSteamer').classList.add('show'); $('imgGold').classList.remove('show');
+  boxEls = [...document.querySelectorAll('.boxSlot')];
+  boxEls.forEach(el=>{ el.className='boxSlot bob'; el.querySelector('img').src=STEAMER_IMG; });
   $('rarityBadge').classList.remove('show');
   $('tHint').classList.remove('hide');
-  $('ttitle').textContent='Tap the box to open it';
-  onTap(w, tapBox);
-  T(()=>{ if(!opened) pointAt(w); },900);
+  $('ttitle').textContent='Pick a box to open';
+  boxEls.forEach((el,i)=> onTap(el, ()=>tapBox(i)) );
+  T(()=>{ if(!opened) pointAt(boxEls[1]); },900);
 }
-function tapBox(){ if(opened) return; opened=true; hidePointer();
-  const w=$('boxWrap');
-  w.classList.remove('bob'); w.classList.add('pop');
-  sfxPop();
+function tapBox(i){ if(opened) return; opened=true; hidePointer();
+  const chosen = boxEls[i];
+  boxEls.forEach((el,j)=>{ if(j!==i) el.classList.add('dim'); });
+  chosen.classList.remove('bob'); chosen.classList.add('shake');
+  sfxTick();
   $('tHint').classList.add('hide');
   $('ttitle').textContent='Opening…';
   T(()=>{
-    $('imgSteamer').classList.remove('show'); $('imgGold').classList.add('show');
+    chosen.classList.remove('shake'); chosen.classList.add('grown','pop');
+    chosen.querySelector('img').src = GOLD_IMG;
+    boxEls.forEach((el,j)=>{ if(j!==i) el.classList.add('vanish'); });
+    sfxPop();
+  },650);
+  T(()=>{
     $('rarityBadge').classList.add('show');
-    sfxSparkle(); sparkBurst(w,26);
+    sfxSparkle(); sparkBurst(chosen,26);
     $('ttitle').textContent='A LEGENDARY dumpling! ✨';
-  },380);
-  T(()=>{ w.classList.add('shrink'); sfxCollect(); },1650);
-  T(()=>{ $('ttitle').textContent='Added to your jar! 🫙'; },2050);
-  T(finishTrial,3900);
+  },1050);
+  T(()=>{ chosen.classList.add('shrink'); sfxCollect(); },2300);
+  T(()=>{ $('ttitle').textContent='Added to your jar! 🫙'; },2700);
+  T(finishTrial,4500);
 }
 function finishTrial(){ showEnd(); }
 
@@ -310,7 +334,20 @@ $('muteBtn').addEventListener('click',e=>{ e.stopPropagation(); unlock();
   if(master) master.gain.exponentialRampToValueAtTime(soundOn?0.55:0.0001,actx.currentTime+0.15);
   $('muteBtn').textContent=soundOn?'🔊':'🔇'; });
 
-$('imgSteamer').src = STEAMER_IMG; $('imgGold').src = GOLD_IMG; $('endJarImg').src = JAR_IMG;
+$('endJarImg').src = JAR_IMG;
+
+/* ambient floating sparkles/stars — keeps the trial screen feeling as lively as the source
+   footage instead of a flat gradient once the video hands off */
+(function spawnAmbient(){
+  const layer = $('ambientLayer'); const glyphs=['✨','⭐','💫'];
+  for(let i=0;i<14;i++){ const s=document.createElement('div'); s.className='ambientSpark';
+    s.textContent=glyphs[i%glyphs.length];
+    s.style.left=(4+Math.random()*92)+'%'; s.style.top=(20+Math.random()*70)+'%';
+    s.style.fontSize=(10+Math.random()*10)+'px';
+    s.style.animationDuration=(2.8+Math.random()*2.4)+'s';
+    s.style.animationDelay=(Math.random()*3.6)+'s';
+    layer.appendChild(s); }
+})();
 
 const hookVideo = $('hookVideo'), hookVideoBg = $('hookVideoBg');
 hookVideo.src = HOOK_VIDEO_SRC;
